@@ -4,6 +4,7 @@ import sys
 import telegram
 import logging
 import os
+import time
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, CallbackQueryHandler
@@ -35,6 +36,8 @@ class MqttClient():
         self.callback = callback
         self.settings = settings
 
+        self.connected = False
+
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -58,6 +61,9 @@ class MqttClient():
 
         print("Connected with result code {}".format(rc))
 
+        if rc == 0:
+            self.connected = True
+
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
         return
@@ -75,6 +81,8 @@ class MqttClient():
         if rc != 0:
             print("Unexpected disconnection.")
 
+        self.connected = False
+
         return
 
 
@@ -85,7 +93,22 @@ class MqttClient():
 
     def mqtt_thread_body(self):
         while not self.exit:
+
+            if not self.connected:
+
+                print("Not connected, trying reconnection")
+
+                try:
+                    self.client.reconnect()
+                    time.sleep(2)
+                except Exception as e:
+                    print("Exception occurred")
+                    print(e)
+                    time.sleep(5)
+                    continue
+
             self.client.loop()
+
         return
 
 
@@ -259,6 +282,8 @@ if __name__ == "__main__":
     for r in settings:
         print(f"{r}: \"{settings[r]}\"")
     print("")
+
+    sys.stdout.flush()
 
     signal.signal(signal.SIGINT, signal_handler)
     MQTT_OBJ = MqttClient(received, settings)
