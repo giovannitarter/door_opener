@@ -204,6 +204,7 @@ def received(msg):
 
 
 def received_telegram():
+    print("Sending message to {}".format(settings["cmd_topic"]))
     MQTT_OBJ.publish(settings["cmd_topic"], "TOGGLE")
     return
 
@@ -215,9 +216,14 @@ def signal_handler(sig, frame):
 
 
 def my_exit():
+
     MQTT_OBJ.close()
+    print("mqtt closed")
+
     if TEL_OBJ is not None:
         TEL_OBJ.close()
+    print("telegram closed")
+
     sys.exit(0)
     return
 
@@ -234,6 +240,7 @@ def parse_config():
     res["cmd_topic"] = os.environ.get("CMD_TOPIC", "")
 
     users = os.environ.get("ALLOWED_USERS")
+
     if users is not None:
         users = [x.strip() for x in users.split(",")]
     else:
