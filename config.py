@@ -1,0 +1,13 @@
+
+TELEGRAM_API_KEY = ""
+
+MQTT_BROKER_ADDR = ""
+MQTT_BROKER_PORT = 1883
+MQTT_BROKER_TIMEOUT = 60
+CMD_TOPIC = ""
+
+ALLOWED_USERS = [
+        "User1",
+        "User2"
+    ]
+ALLOWED_CHAT = ""
