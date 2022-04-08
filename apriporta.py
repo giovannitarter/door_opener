@@ -33,15 +33,16 @@ class MqttClient():
 
         self.exit = False
         self.callback = callback
+        self.settings = settings
 
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.on_disconnect = self.on_disconnect
         self.client.connect(
-                settings["addr"],
-                settings["port"],
-                settings["timeout"],
+                self.settings["addr"],
+                self.settings["port"],
+                self.settings["timeout"],
                 )
         self.client.reconnect_delay_set(min_delay=1, max_delay=120)
 
@@ -203,7 +204,7 @@ def received(msg):
 
 
 def received_telegram():
-    MQTT_OBJ.publish(cfg.CMD_TOPIC, "TOGGLE")
+    MQTT_OBJ.publish(settings["cmd_topic"], "TOGGLE")
     return
 
 
@@ -230,6 +231,7 @@ def parse_config():
     res["timeout"] = os.environ.get("MQTT_BROKER_TIMEOUT", cfg.MQTT_BROKER_TIMEOUT)
     res["chat"] = os.environ.get("ALLOWED_CHAT", cfg.ALLOWED_CHAT)
     res["api_key"] = os.environ.get("TELEGRAM_API_KEY", cfg.TELEGRAM_API_KEY)
+    res["cmd_topic"] = os.environ.get("CMD_TOPIC", "")
 
     users = os.environ.get("ALLOWED_USERS")
     if users is not None:
