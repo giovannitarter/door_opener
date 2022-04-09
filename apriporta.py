@@ -25,6 +25,11 @@ import config as cfg
 #        )
 
 
+S_DISCONNECTED = 0
+S_CONNECTING = 1
+S_CONNECTED = 2
+
+
 #
 #MQTT
 #
@@ -36,12 +41,14 @@ class MqttClient():
         self.callback = callback
         self.settings = settings
 
-        self.connected = False
 
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.on_disconnect = self.on_disconnect
+
+        self.state = S_CONNECTING
+
         self.client.connect(
                 self.settings["addr"],
                 self.settings["port"],
@@ -62,7 +69,7 @@ class MqttClient():
         print("Connected with result code {}".format(rc))
 
         if rc == 0:
-            self.connected = True
+            self.state = S_CONNECTED
 
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
@@ -76,12 +83,13 @@ class MqttClient():
         self.callback(msg)
         return
 
+
     def on_disconnect(self, client, userdata, rc):
 
         if rc != 0:
-            print("Unexpected disconnection.")
+            print("Unexpected disconnection. rc: {}".format(rc))
 
-        self.connected = False
+        self.state = S_DISCONNECTED
 
         return
 
@@ -92,22 +100,36 @@ class MqttClient():
 
 
     def mqtt_thread_body(self):
+
         while not self.exit:
 
-            if not self.connected:
+            self.client.loop()
+
+            if self.state == S_DISCONNECTED:
 
                 print("Not connected, trying reconnection")
+                self.state = S_CONNECTING
 
                 try:
                     self.client.reconnect()
-                    time.sleep(2)
-                except Exception as e:
-                    print("Exception occurred")
-                    print(e)
-                    time.sleep(5)
-                    continue
 
-            self.client.loop()
+                except Exception as e:
+                    print("Exception occurred while reconnecting")
+                    print(e)
+                    print("")
+                    self.state = S_DISCONNECTED
+
+                    #Wait 2 seconds before attempting reconnection
+                    time.sleep(2)
+
+            elif self.state == S_CONNECTING:
+                print("waiting reconnection")
+                time.sleep(0.5)
+
+            elif self.state == S_CONNECTED:
+                pass
+
+            sys.stdout.flush()
 
         return
 
@@ -278,6 +300,7 @@ if __name__ == "__main__":
 
     settings = parse_config()
 
+    print("")
     print("settings")
     for r in settings:
         print(f"{r}: \"{settings[r]}\"")
