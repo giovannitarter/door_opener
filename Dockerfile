@@ -2,8 +2,10 @@ FROM python:latest
 
 RUN pip install paho-mqtt python-telegram-bot
 
-ADD apriporta.py /
-ADD config.py /
+RUN mkdir /root/door_opener
+ADD apriporta.py /root/door_opener/
+ADD config.py /root/door_opener/
 
-CMD [ "python", "/apriporta.py" ]
+WORKDIR /root
+ENTRYPOINT [ "python", "/root/door_opener/apriporta.py" ]
 
