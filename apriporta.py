@@ -37,7 +37,6 @@ class MqttClient():
 
     def __init__(self, callback, settings):
 
-        self.exit = False
         self.callback = callback
         self.settings = settings
 
@@ -55,9 +54,7 @@ class MqttClient():
                 self.settings["timeout"],
                 )
         self.client.reconnect_delay_set(min_delay=1, max_delay=120)
-
-        self.main_thread = threading.Thread(target=self.mqtt_thread_body)
-        self.main_thread.start()
+        self.client.loop_start()
         return
 
 
@@ -99,45 +96,9 @@ class MqttClient():
         return
 
 
-    def mqtt_thread_body(self):
-
-        while not self.exit:
-
-            self.client.loop()
-
-            if self.state == S_DISCONNECTED:
-
-                print("Not connected, trying reconnection")
-                self.state = S_CONNECTING
-
-                try:
-                    self.client.reconnect()
-
-                except Exception as e:
-                    print("Exception occurred while reconnecting")
-                    print(e)
-                    print("")
-                    self.state = S_DISCONNECTED
-
-                    #Wait 2 seconds before attempting reconnection
-                    time.sleep(2)
-
-            elif self.state == S_CONNECTING:
-                print("waiting reconnection")
-                time.sleep(0.5)
-
-            elif self.state == S_CONNECTED:
-                pass
-
-            sys.stdout.flush()
-
-        return
-
-
     def close(self):
         self.client.disconnect()
-        self.exit = True
-        self.main_thread.join()
+        self.client.loop_stop()
         return
 
 
