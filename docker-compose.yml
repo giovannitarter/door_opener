@@ -1,0 +1,20 @@
+version: "3.4"
+services:
+
+  door_opener_async:
+    image: door_opener_async:latest
+
+    build: ./door_opener
+
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+
+    container_name: door_opener_async
+
+    env_file:
+      - environment
+
+    restart: always
+    network_mode: host
+
+
