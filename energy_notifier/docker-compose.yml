@@ -1,0 +1,19 @@
+services:
+
+  energy_notifier:
+    image: energy_notifier:latest
+
+    build: ./build
+
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+      - "traefik.enable=false"
+
+    container_name: energy_notifier
+
+    env_file:
+      - environment
+
+    restart: always
+    network_mode: host
+

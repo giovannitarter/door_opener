@@ -1,8 +1,0 @@
-CHAT_ID=262707970
-WINDOW_SIZE=60
-KEEPALIVE_URL=https://uptime.giovannitarter.com/api/push/VZNpjILgUY?status=up&msg=OK&ping=
-TOKEN=6057165818:AAGqjiyl4asShbbFg5z8QQkAt5mQrbNjNuc
-ALLOWED_USERNAME=@gtarter
-MQTT_BROKER_ADDR=broker.lan
-POWER_TOPIC=tele/door_opener/#
-RELAY_TOPIC=cmnd/tasmota_15F88D/POWER1
