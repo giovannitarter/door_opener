@@ -1,3 +1,4 @@
+---
 services:
 
   door_opener_async:
@@ -16,5 +17,3 @@ services:
 
     restart: always
     network_mode: host
-
-
